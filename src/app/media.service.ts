@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { Observable, from, of, iif, Subject } from "rxjs";
-import { map, mergeMap, tap, toArray, mergeAll } from "rxjs/operators";
+import { map, mergeMap, tap, toArray, mergeAll, filter } from "rxjs/operators";
 import { environment } from "../environments/environment";
 import { SpotifyService } from "./spotify.service";
 import { Media } from "./media";
@@ -90,12 +90,13 @@ export class MediaService {
             () => (item.query && item.query.length > 0 ? true : false), // Get media by query
             this.spotifyService.getMediaByQuery(item.query, item.category).pipe(
               map((items) => {
-                // If the user entered an user-defined artist name in addition to a query, overwrite orignal artist from spotify
-                if (item.artist?.length > 0) {
-                  items.forEach((currentItem) => {
-                    currentItem.artist = item.artist;
-                  });
-                }
+                return items.filter(
+                  (mediaItem) =>
+                    item.filter !== "strict" || mediaItem.artist === item.artist
+                );
+              }),
+              map((items) => {
+                this.patchArtistNames(item, items);
                 return items;
               })
             ),
@@ -105,12 +106,7 @@ export class MediaService {
                 .getMediaByArtistID(item.artistid, item.category)
                 .pipe(
                   map((items) => {
-                    // If the user entered an user-defined artist name in addition to a query, overwrite orignal artist from spotify
-                    if (item.artist?.length > 0) {
-                      items.forEach((currentItem) => {
-                        currentItem.artist = item.artist;
-                      });
-                    }
+                    this.patchArtistNames(item, items);
                     return items;
                   })
                 ),
@@ -121,13 +117,8 @@ export class MediaService {
                     : false, // Get media by album
                 this.spotifyService.getMediaByID(item.id, item.category).pipe(
                   map((currentItem) => {
-                    // If the user entered an user-defined artist or album name, overwrite values from spotify
-                    if (item.artist?.length > 0) {
-                      currentItem.artist = item.artist;
-                    }
-                    if (item.title?.length > 0) {
-                      currentItem.title = item.title;
-                    }
+                    this.patchArtistName(item, currentItem);
+                    this.patchAlbumName(item, currentItem);
                     return [currentItem];
                   })
                 ),
@@ -149,6 +140,27 @@ export class MediaService {
         });
       })
     );
+  }
+
+  private patchAlbumName(template: Media, mediaItem: Media) {
+    if (template.title?.length > 0) {
+      mediaItem.title = template.title;
+    }
+  }
+
+  private patchArtistName(template: Media, mediaItem: Media) {
+    if (template.artist?.length > 0) {
+      mediaItem.artist = template.artist;
+    }
+  }
+
+  // If the user entered an user-defined artist name in addition to a query, overwrite orignal artist from spotify
+  private patchArtistNames(template: Media, mediaItems: Media[]) {
+    if (template.artist?.length > 0) {
+      mediaItems.forEach((currentItem) => {
+        currentItem.artist = template.artist;
+      });
+    }
   }
 
   publishArtists() {
