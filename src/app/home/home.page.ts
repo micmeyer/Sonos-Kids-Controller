@@ -1,23 +1,19 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { IonSlides } from '@ionic/angular';
-import { Router, NavigationExtras } from '@angular/router';
-import { MediaService } from '../media.service';
-import { ArtworkService } from '../artwork.service';
-import { PlayerService } from '../player.service';
-import { ActivityIndicatorService } from '../activity-indicator.service';
-import { Artist } from '../artist';
-import { Media } from '../media';
+import { Component, OnInit, ViewChild } from "@angular/core";
+import { Router, NavigationExtras } from "@angular/router";
+import { MediaService } from "../media.service";
+import { ArtworkService } from "../artwork.service";
+import { PlayerService } from "../player.service";
+import { ActivityIndicatorService } from "../activity-indicator.service";
+import { Artist } from "../artist";
+import { Media } from "../media";
 
 @Component({
-  selector: 'app-home',
-  templateUrl: 'home.page.html',
-  styleUrls: ['home.page.scss'],
+  selector: "app-home",
+  templateUrl: "home.page.html",
+  styleUrls: ["home.page.scss"],
 })
 export class HomePage implements OnInit {
-  @ViewChild('artist_slider', { static: false }) artistSlider: IonSlides;
-  @ViewChild('media_slider', { static: false }) mediaSlider: IonSlides;
-
-  category =  'audiobook';
+  category = "audiobook";
 
   artists: Artist[] = [];
   media: Media[] = [];
@@ -28,18 +24,6 @@ export class HomePage implements OnInit {
 
   needsUpdate = false;
 
-  slideOptions = {
-    initialSlide: 0,
-    slidesPerView: 3,
-    autoplay: false,
-    loop: false,
-    freeMode: true,
-    freeModeSticky: true,
-    freeModeMomentumBounce: false,
-    freeModeMomentumRatio: 1.0,
-    freeModeMomentumVelocityRatio: 1.0
-  };
-
   constructor(
     private mediaService: MediaService,
     private artworkService: ArtworkService,
@@ -49,42 +33,42 @@ export class HomePage implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.mediaService.setCategory('audiobook');
+    this.mediaService.setCategory("audiobook");
 
     // Subscribe
-    this.mediaService.getMedia().subscribe(media => {
+    this.mediaService.getMedia().subscribe((media) => {
       this.media = media;
 
-      this.media.forEach(currentMedia => {
-        this.artworkService.getArtwork(currentMedia).subscribe(url => {
+      this.media.forEach((currentMedia) => {
+        this.artworkService.getArtwork(currentMedia).subscribe((url) => {
           this.covers[currentMedia.title] = url;
         });
       });
-      this.mediaSlider?.update();
+      // this.mediaSlider?.update();
 
       // Workaround as the scrollbar handle isn't visible after the immediate update
       // Seems like a size calculation issue, as resizing the browser window helps
-      // Better fix for this? 
+      // Better fix for this?
       window.setTimeout(() => {
-        this.mediaSlider?.update();
+        // this.mediaSlider?.update();
       }, 1000);
     });
 
-    this.mediaService.getArtists().subscribe(artists => {
+    this.mediaService.getArtists().subscribe((artists) => {
       this.artists = artists;
 
-      this.artists.forEach(artist => {
-        this.artworkService.getArtwork(artist.coverMedia).subscribe(url => {
+      this.artists.forEach((artist) => {
+        this.artworkService.getArtwork(artist.coverMedia).subscribe((url) => {
           this.covers[artist.name] = url;
         });
       });
-      this.artistSlider?.update();
+      // this.artistSlider?.update();
 
       // Workaround as the scrollbar handle isn't visible after the immediate update
       // Seems like a size calculation issue, as resizing the browser window helps
-      // Better fix for this? 
+      // Better fix for this?
       window.setTimeout(() => {
-        this.artistSlider?.update();
+        // this.artistSlider?.update();
       }, 1000);
     });
 
@@ -110,8 +94,8 @@ export class HomePage implements OnInit {
     this.update();
   }
 
-  update() {
-    if (this.category === 'audiobook' || this.category === 'music') {
+  update() {
+    if (this.category === "audiobook" || this.category === "music") {
       this.mediaService.publishArtists();
     } else {
       this.mediaService.publishMedia();
@@ -120,22 +104,22 @@ export class HomePage implements OnInit {
   }
 
   artistCoverClicked(clickedArtist: Artist) {
-    this.activityIndicatorService.create().then(indicator => {
+    this.activityIndicatorService.create().then((indicator) => {
       this.activityIndicatorVisible = true;
       indicator.present().then(() => {
         const navigationExtras: NavigationExtras = {
           state: {
-            artist: clickedArtist
-          }
+            artist: clickedArtist,
+          },
         };
-        this.router.navigate(['/medialist'], navigationExtras);
+        this.router.navigate(["/medialist"], navigationExtras);
       });
     });
   }
 
   artistNameClicked(clickedArtist: Artist) {
-    this.playerService.getConfig().subscribe(config => {
-      if (config.tts == null || config.tts.enabled === true) {
+    this.playerService.getConfig().subscribe((config) => {
+      if (config.tts == null || config.tts.enabled === true) {
         this.playerService.say(clickedArtist.name);
       }
     });
@@ -144,15 +128,15 @@ export class HomePage implements OnInit {
   mediaCoverClicked(clickedMedia: Media) {
     const navigationExtras: NavigationExtras = {
       state: {
-        media: clickedMedia
-      }
+        media: clickedMedia,
+      },
     };
-    this.router.navigate(['/player'], navigationExtras);
+    this.router.navigate(["/player"], navigationExtras);
   }
 
   mediaNameClicked(clickedMedia: Media) {
-    this.playerService.getConfig().subscribe(config => {
-      if (config.tts == null || config.tts.enabled === true) {
+    this.playerService.getConfig().subscribe((config) => {
+      if (config.tts == null || config.tts.enabled === true) {
         this.playerService.say(clickedMedia.title);
       }
     });
@@ -168,7 +152,7 @@ export class HomePage implements OnInit {
         this.editButtonclickCount = 0;
       }, 500);
     } else {
-      this.router.navigate(['/edit']);
+      this.router.navigate(["/edit"]);
       this.editButtonclickCount = 0;
       this.needsUpdate = true;
     }
