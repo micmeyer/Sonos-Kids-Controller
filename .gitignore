@@ -33,5 +33,7 @@ npm-debug.log*
 /deploy
 
 server/config/data.json
+server/config/data.json.bak
 config.json
+
 
