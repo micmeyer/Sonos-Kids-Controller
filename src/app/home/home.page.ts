@@ -1,11 +1,11 @@
 import { Component, OnInit, ViewChild } from "@angular/core";
 import { Router, NavigationExtras } from "@angular/router";
-import { MediaService } from "../media.service";
-import { ArtworkService } from "../artwork.service";
-import { PlayerService } from "../player.service";
-import { ActivityIndicatorService } from "../activity-indicator.service";
-import { Artist } from "../artist";
-import { Media } from "../media";
+import { MediaService } from "../service/media.service";
+import { ArtworkService } from "../service/artwork.service";
+import { PlayerService } from "../service/player.service";
+import { ActivityIndicatorService } from "../service/activity-indicator.service";
+import { Artist } from "../service/artist";
+import { Media } from "../service/media";
 
 @Component({
   selector: "app-home",

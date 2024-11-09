@@ -2,7 +2,7 @@ import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { Observable, from, of, iif, Subject } from "rxjs";
 import { map, mergeMap, tap, toArray, mergeAll, filter } from "rxjs/operators";
-import { environment } from "../environments/environment";
+import { environment } from "../../environments/environment";
 import { SpotifyService } from "./spotify.service";
 import { Media } from "./media";
 import { Artist } from "./artist";

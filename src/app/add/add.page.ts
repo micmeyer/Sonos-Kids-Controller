@@ -6,8 +6,8 @@ import {
   ViewChild,
 } from "@angular/core";
 import { NavController, IonSelect, IonInput, IonSegment } from "@ionic/angular";
-import { MediaService } from "../media.service";
-import { Media } from "../media";
+import { MediaService } from "../service/media.service";
+import { Media } from "../service/media";
 import Keyboard from "simple-keyboard";
 import { NgForm } from "@angular/forms";
 

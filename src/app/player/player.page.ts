@@ -1,9 +1,9 @@
 import { Component, OnInit } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
 
-import { ArtworkService } from "../artwork.service";
-import { PlayerService, PlayerCmds } from "../player.service";
-import { Media } from "../media";
+import { ArtworkService } from "../service/artwork.service";
+import { PlayerService, PlayerCmds } from "../service/player.service";
+import { Media } from "../service/media";
 
 @Component({
   selector: "app-player",

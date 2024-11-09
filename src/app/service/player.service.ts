@@ -2,7 +2,7 @@ import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { Media } from "./media";
 import { SonosApiConfig } from "./sonos-api";
-import { environment } from "../environments/environment";
+import { environment } from "../../environments/environment";
 import { Observable } from "rxjs";
 import { publishReplay, refCount } from "rxjs/operators";
 

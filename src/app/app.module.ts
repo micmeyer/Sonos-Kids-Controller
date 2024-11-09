@@ -6,7 +6,7 @@ import { IonicModule, IonicRouteStrategy } from "@ionic/angular";
 
 import { AppComponent } from "./app.component";
 import { AppRoutingModule } from "./app-routing.module";
-import { MediaService } from "./media.service";
+import { MediaService } from "./service/media.service";
 
 @NgModule({
   declarations: [AppComponent],

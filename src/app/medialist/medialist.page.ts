@@ -1,10 +1,10 @@
 import { Component, OnInit, ViewChild } from "@angular/core";
 import { ActivatedRoute, Router, NavigationExtras } from "@angular/router";
-import { MediaService } from "../media.service";
-import { ArtworkService } from "../artwork.service";
-import { PlayerService } from "../player.service";
-import { Media } from "../media";
-import { Artist } from "../artist";
+import { MediaService } from "../service/media.service";
+import { ArtworkService } from "../service/artwork.service";
+import { PlayerService } from "../service/player.service";
+import { Media } from "../service/media";
+import { Artist } from "../service/artist";
 
 @Component({
   selector: "app-medialist",
