@@ -88,22 +88,25 @@ export class MediaService {
         ) =>
           iif(
             () => (item.query && item.query.length > 0 ? true : false), // Get media by query
-            this.spotifyService.getMediaByQuery(item.query, item.category).pipe(
-              map((items) => {
-                return items.filter(
-                  (mediaItem) =>
-                    item.filter !== "strict" || mediaItem.artist === item.artist
-                );
-              }),
-              map((items) => {
-                this.patchArtistNames(item, items);
-                return items;
-              })
-            ),
+            this.spotifyService
+              .getMediaByQuery(item.query!, item.category)
+              .pipe(
+                map((items) => {
+                  return items.filter(
+                    (mediaItem) =>
+                      item.filter !== "strict" ||
+                      mediaItem.artist === item.artist
+                  );
+                }),
+                map((items) => {
+                  this.patchArtistNames(item, items);
+                  return items;
+                })
+              ),
             iif(
               () => (item.artistid && item.artistid.length > 0 ? true : false), // Get media by artist
               this.spotifyService
-                .getMediaByArtistID(item.artistid, item.category)
+                .getMediaByArtistID(item.artistid!, item.category)
                 .pipe(
                   map((items) => {
                     this.patchArtistNames(item, items);
@@ -115,7 +118,7 @@ export class MediaService {
                   item.type === "spotify" && item.id && item.id.length > 0
                     ? true
                     : false, // Get media by album
-                this.spotifyService.getMediaByID(item.id, item.category).pipe(
+                this.spotifyService.getMediaByID(item.id!, item.category).pipe(
                   map((currentItem) => {
                     this.patchArtistName(item, currentItem);
                     this.patchAlbumName(item, currentItem);
@@ -143,20 +146,20 @@ export class MediaService {
   }
 
   private patchAlbumName(template: Media, mediaItem: Media) {
-    if (template.title?.length > 0) {
+    if (template.title && template.title.length > 0) {
       mediaItem.title = template.title;
     }
   }
 
   private patchArtistName(template: Media, mediaItem: Media) {
-    if (template.artist?.length > 0) {
+    if (template.artist && template.artist.length > 0) {
       mediaItem.artist = template.artist;
     }
   }
 
   // If the user entered an user-defined artist name in addition to a query, overwrite orignal artist from spotify
   private patchArtistNames(template: Media, mediaItems: Media[]) {
-    if (template.artist?.length > 0) {
+    if (template.artist && template.artist.length > 0) {
       mediaItems.forEach((currentItem) => {
         currentItem.artist = template.artist;
       });
@@ -186,28 +189,31 @@ export class MediaService {
     return this.artistSubject.pipe(
       map((media: Media[]) => {
         // Create temporary object with artists as keys and albumCounts as values
-        const mediaCounts = media.reduce((tempCounts, currentMedia) => {
-          tempCounts[currentMedia.artist] =
-            (tempCounts[currentMedia.artist] || 0) + 1;
-          return tempCounts;
-        }, {});
+        const mediaCounts: Record<string, number> = media.reduce(
+          (tempCounts: Record<string, number>, currentMedia) => {
+            tempCounts[currentMedia.artist!] =
+              (tempCounts[currentMedia.artist!] || 0) + 1;
+            return tempCounts;
+          },
+          {}
+        );
 
         // Create temporary object with artists as keys and covers (first media cover) as values
         const covers = media
-          .sort((a, b) => (a.title <= b.title ? -1 : 1))
-          .reduce((tempCovers, currentMedia) => {
-            if (!tempCovers[currentMedia.artist]) {
-              tempCovers[currentMedia.artist] = currentMedia.cover;
+          .sort((a, b) => (a.title! <= b.title! ? -1 : 1))
+          .reduce((tempCovers: Record<string, string>, currentMedia) => {
+            if (!tempCovers[currentMedia.artist!]) {
+              tempCovers[currentMedia.artist!] = currentMedia.cover!;
             }
             return tempCovers;
           }, {});
 
         // Create temporary object with artists as keys and first media as values
         const coverMedia = media
-          .sort((a, b) => (a.title <= b.title ? -1 : 1))
-          .reduce((tempMedia, currentMedia) => {
-            if (!tempMedia[currentMedia.artist]) {
-              tempMedia[currentMedia.artist] = currentMedia;
+          .sort((a, b) => (a.title! <= b.title! ? -1 : 1))
+          .reduce((tempMedia: Record<string, Media>, currentMedia) => {
+            if (!tempMedia[currentMedia.artist!]) {
+              tempMedia[currentMedia.artist!] = currentMedia;
             }
             return tempMedia;
           }, {});
@@ -237,7 +243,7 @@ export class MediaService {
         return media
           .filter((currentMedia) => currentMedia.artist === artist.name)
           .sort((a, b) =>
-            a.title.localeCompare(b.title, undefined, {
+            a.title!.localeCompare(b.title!, undefined, {
               numeric: true,
               sensitivity: "base",
             })
@@ -251,7 +257,7 @@ export class MediaService {
     return this.mediaSubject.pipe(
       map((media: Media[]) => {
         return media.sort((a, b) =>
-          a.title.localeCompare(b.title, undefined, {
+          a.title!.localeCompare(b.title!, undefined, {
             numeric: true,
             sensitivity: "base",
           })

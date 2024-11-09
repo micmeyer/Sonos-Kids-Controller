@@ -21,7 +21,7 @@
               draggable="false"
               style="-moz-user-select: none"
               ondragstart="return false;"
-              src="{{covers[currentMedia.title]}}"
+              src="{{ currentMedia.title ? covers[currentMedia.title] : '' }}"
             />
             <ion-card-header (click)="mediaNameClicked(currentMedia)">
               <ion-card-title class="ion-text-nowrap truncate-text"

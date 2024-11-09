@@ -19,6 +19,7 @@ import {
   SpotifyArtistsAlbumsResponse,
 } from "./spotify";
 import { Media } from "./media";
+import SpotifyWebApi from "spotify-web-api-js";
 
 declare const require: any;
 
@@ -26,11 +27,10 @@ declare const require: any;
   providedIn: "root",
 })
 export class SpotifyService {
-  spotifyApi: any;
+  spotifyApi: SpotifyWebApi.SpotifyWebApiJs;
   refreshingToken = false;
 
   constructor(private http: HttpClient) {
-    const SpotifyWebApi = require("../../src/app/spotify-web-api.js");
     this.spotifyApi = new SpotifyWebApi();
   }
 
@@ -38,10 +38,8 @@ export class SpotifyService {
     const albums = defer(() =>
       this.spotifyApi.searchAlbums(query, { limit: 1, offset: 0, market: "CH" })
     ).pipe(
-      retryWhen((errors) => {
-        return this.errorHandler(errors);
-      }),
-      map((response: SpotifyAlbumsResponse) => response.albums.total),
+      retryWhen((errors) => this.errorHandler(errors)),
+      map((response: SpotifyApi.AlbumSearchResponse) => response.albums.total),
       mergeMap((count) => range(0, Math.ceil(count / 50))),
       mergeMap((multiplier) =>
         defer(() =>
@@ -51,14 +49,12 @@ export class SpotifyService {
             market: "CH",
           })
         ).pipe(
-          retryWhen((errors) => {
-            return this.errorHandler(errors);
-          }),
-          map((response: SpotifyAlbumsResponse) => {
+          retryWhen((errors) => this.errorHandler(errors)),
+          map((response: SpotifyApi.AlbumSearchResponse) => {
             return response.albums.items.map((item) => {
               const media: Media = {
                 id: item.id,
-                artist: item.artists[0].name,
+                artist: item.name,
                 title: item.name,
                 cover: item.images[0].url,
                 type: "spotify",
@@ -85,10 +81,8 @@ export class SpotifyService {
         market: "CH",
       })
     ).pipe(
-      retryWhen((errors) => {
-        return this.errorHandler(errors);
-      }),
-      map((response: SpotifyArtistsAlbumsResponse) => response.total),
+      retryWhen((errors) => this.errorHandler(errors)),
+      map((response: SpotifyApi.ArtistsAlbumsResponse) => response.total),
       mergeMap((count) => range(0, Math.ceil(count / 50))),
       mergeMap((multiplier) =>
         defer(() =>
@@ -99,14 +93,12 @@ export class SpotifyService {
             market: "CH",
           })
         ).pipe(
-          retryWhen((errors) => {
-            return this.errorHandler(errors);
-          }),
-          map((response: SpotifyArtistsAlbumsResponse) => {
+          retryWhen((errors) => this.errorHandler(errors)),
+          map((response: SpotifyApi.ArtistsAlbumsResponse) => {
             return response.items.map((item) => {
               const media: Media = {
                 id: item.id,
-                artist: item.artists[0].name,
+                artist: item.name,
                 title: item.name,
                 cover: item.images[0].url,
                 type: "spotify",
@@ -125,36 +117,39 @@ export class SpotifyService {
   }
 
   getMediaByID(id: string, category: string): Observable<Media> {
-    let fetch: any;
-
-    switch (category) {
-      case "playlist":
-        fetch = this.spotifyApi.getPlaylist;
-        break;
-      default:
-        fetch = this.spotifyApi.getAlbum;
+    if (category === "playlist") {
+      const fetch = this.spotifyApi.getPlaylist;
+      return defer(() => fetch(id, { limit: 1, offset: 0, market: "CH" })).pipe(
+        retryWhen((errors) => this.errorHandler(errors)),
+        map((response: SpotifyApi.SinglePlaylistResponse) => {
+          const media: Media = {
+            id: response.id,
+            artist: response.name,
+            title: response.name,
+            cover: response?.images[0]?.url,
+            type: "spotify",
+            category,
+          };
+          return media;
+        })
+      );
+    } else {
+      const fetch = this.spotifyApi.getAlbum;
+      return defer(() => fetch(id, { limit: 1, offset: 0, market: "CH" })).pipe(
+        retryWhen((errors) => this.errorHandler(errors)),
+        map((response: SpotifyApi.SingleAlbumResponse) => {
+          const media: Media = {
+            id: response.id,
+            artist: response.artists?.[0]?.name,
+            title: response.name,
+            cover: response?.images[0]?.url,
+            type: "spotify",
+            category,
+          };
+          return media;
+        })
+      );
     }
-
-    const album = defer(() =>
-      fetch(id, { limit: 1, offset: 0, market: "CH" })
-    ).pipe(
-      retryWhen((errors) => {
-        return this.errorHandler(errors);
-      }),
-      map((response: SpotifyAlbumsResponseItem) => {
-        const media: Media = {
-          id: response.id,
-          artist: response.artists?.[0]?.name,
-          title: response.name,
-          cover: response?.images[0]?.url,
-          type: "spotify",
-          category,
-        };
-        return media;
-      })
-    );
-
-    return album;
   }
 
   // Only used for single "artist + title" entries with "type: spotify" in the database.
@@ -165,10 +160,8 @@ export class SpotifyService {
         market: "CH",
       })
     ).pipe(
-      retryWhen((errors) => {
-        return this.errorHandler(errors);
-      }),
-      map((response: SpotifyAlbumsResponse) => {
+      retryWhen((errors) => this.errorHandler(errors)),
+      map((response: SpotifyApi.AlbumSearchResponse) => {
         return response?.albums?.items?.[0]?.images?.[0]?.url || "";
       })
     );
@@ -187,7 +180,7 @@ export class SpotifyService {
     });
   }
 
-  errorHandler(errors: Observable<any>) {
+  errorHandler(errors: Observable<{ status: number }>) {
     return errors.pipe(
       flatMap((error) =>
         error.status !== 401 && error.status !== 429

@@ -17,7 +17,7 @@ export class HomePage implements OnInit {
 
   artists: Artist[] = [];
   media: Media[] = [];
-  covers = {};
+  covers: Record<string, string> = {};
   activityIndicatorVisible = false;
   editButtonclickCount = 0;
   editClickTimer = 0;
@@ -41,7 +41,9 @@ export class HomePage implements OnInit {
 
       this.media.forEach((currentMedia) => {
         this.artworkService.getArtwork(currentMedia).subscribe((url) => {
-          this.covers[currentMedia.title] = url;
+          if (currentMedia.title) {
+            this.covers[currentMedia.title] = url;
+          }
         });
       });
       // this.mediaSlider?.update();
@@ -137,7 +139,9 @@ export class HomePage implements OnInit {
   mediaNameClicked(clickedMedia: Media) {
     this.playerService.getConfig().subscribe((config) => {
       if (config.tts == null || config.tts.enabled === true) {
-        this.playerService.say(clickedMedia.title);
+        if (clickedMedia.title) {
+          this.playerService.say(clickedMedia.title);
+        }
       }
     });
   }

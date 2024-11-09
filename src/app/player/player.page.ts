@@ -1,19 +1,18 @@
-import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Component, OnInit } from "@angular/core";
+import { ActivatedRoute, Router } from "@angular/router";
 
-import { ArtworkService } from '../artwork.service';
-import { PlayerService, PlayerCmds } from '../player.service';
-import { Media } from '../media';
+import { ArtworkService } from "../artwork.service";
+import { PlayerService, PlayerCmds } from "../player.service";
+import { Media } from "../media";
 
 @Component({
-  selector: 'app-player',
-  templateUrl: './player.page.html',
-  styleUrls: ['./player.page.scss'],
+  selector: "app-player",
+  templateUrl: "./player.page.html",
+  styleUrls: ["./player.page.scss"],
 })
 export class PlayerPage implements OnInit {
-
-  media: Media;
-  cover = '';
+  media?: Media;
+  cover = "";
   playing = true;
 
   constructor(
@@ -22,17 +21,20 @@ export class PlayerPage implements OnInit {
     private artworkService: ArtworkService,
     private playerService: PlayerService
   ) {
-    this.route.queryParams.subscribe(params => {
-      if (this.router.getCurrentNavigation().extras.state) {
-        this.media = this.router.getCurrentNavigation().extras.state.media;
+    this.route.queryParams.subscribe((params) => {
+      if (this.router.getCurrentNavigation()?.extras.state) {
+        this.media =
+          this.router.getCurrentNavigation()?.extras?.state?.["media"];
       }
     });
   }
 
   ngOnInit() {
-    this.artworkService.getArtwork(this.media).subscribe(url => {
-      this.cover = url;
-    });
+    if (this.media) {
+      this.artworkService.getArtwork(this.media).subscribe((url) => {
+        this.cover = url;
+      });
+    }
   }
 
   ionViewWillEnter() {
@@ -40,7 +42,9 @@ export class PlayerPage implements OnInit {
       this.playerService.sendCmd(PlayerCmds.CLEARQUEUE);
 
       window.setTimeout(() => {
-        this.playerService.playMedia(this.media);
+        if (this.media) {
+          this.playerService.playMedia(this.media);
+        }
       }, 1000);
     }
   }

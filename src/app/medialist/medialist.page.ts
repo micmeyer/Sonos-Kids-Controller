@@ -12,9 +12,9 @@ import { Artist } from "../artist";
   styleUrls: ["./medialist.page.scss"],
 })
 export class MedialistPage implements OnInit {
-  artist: Artist;
+  artist!: Artist;
   media: Media[] = [];
-  covers = {};
+  covers: Record<string, string> = {};
 
   constructor(
     private route: ActivatedRoute,
@@ -24,8 +24,9 @@ export class MedialistPage implements OnInit {
     private playerService: PlayerService
   ) {
     this.route.queryParams.subscribe((params) => {
-      if (this.router.getCurrentNavigation().extras.state) {
-        this.artist = this.router.getCurrentNavigation().extras.state.artist;
+      if (this.router.getCurrentNavigation()?.extras.state) {
+        this.artist =
+          this.router.getCurrentNavigation()?.extras?.state?.["artist"];
       }
     });
   }
@@ -37,7 +38,9 @@ export class MedialistPage implements OnInit {
 
       this.media.forEach((currentMedia) => {
         this.artworkService.getArtwork(currentMedia).subscribe((url) => {
-          this.covers[currentMedia.title] = url;
+          if (currentMedia.title) {
+            this.covers[currentMedia.title] = url;
+          }
         });
       });
       // this.slider.update();
@@ -66,7 +69,9 @@ export class MedialistPage implements OnInit {
   mediaNameClicked(clickedMedia: Media) {
     this.playerService.getConfig().subscribe((config) => {
       if (config.tts == null || config.tts.enabled === true) {
-        this.playerService.say(clickedMedia.title);
+        if (clickedMedia.title) {
+          this.playerService.say(clickedMedia.title);
+        }
       }
     });
   }
